@@ -1,25 +1,105 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
 typedef char String[1024];
 
 
 // gcc -o menu menu.c ; .\menu.exe
 
 
-
+//構造体　
 typedef struct {
-    char name[16];     // 名前
+    char name[64];     // 名前
     int id;            // 社員ID
-    int gender;        //  性別
-    int date;          // 誕生日
+    int gender;        // 性別
+    char date[16];     // 誕生日
     int department;    // 部署番号
     int salary;        // 給与
 } Employee;
 
 
+// 入力チェック　整数かつ範囲内の入力を強制する関数 inputInteger
+int inputInteger(const char *message, int min, int max) {
+    String input;
+    long long value;
+    int isValid;
+
+    while (1) {
+        printf("%s", message);
+        scanf("%s", input);
+
+        isValid = 1; // 一度正しいと仮定する
+
+        // 1. 文字列が整数の形式であるかチェック
+        // 先頭がマイナス符号、または数字であるか
+        if (input[0] != '-' && (input[0] < '0' || input[0] > '9')) {
+            isValid = 0;
+        } else {
+            // 2文字目以降がすべて数字であるか
+            for (int i = 1; input[i] != '\0'; i++) {
+                if (input[i] < '0' || input[i] > '9') {
+                    isValid = 0;
+                    break;
+                }
+            }
+        }
+
+        // マイナス符号だけの入力（"-" のみ）はエラーにする
+        if (input[0] == '-' && input[1] == '\0') {
+            isValid = 0;
+        }
+
+        // 2. 正しい整数の形式だった場合、範囲チェック
+        if (isValid) {
+            value = atoi(input);
+            if (value >= min && value <= max) {
+                return value; // 合格なら数値を返してループを抜ける
+            }
+        }
+
+        // エラーメッセージを表示して、再入力させる
+        printf("%d以上%d以下の整数を入力してください: ", min, max);
+    }
+}   
+    
+    
+    
+
+// 入力チェック　文字数が範囲内かチェックする関数 inputInteger
+void inputString(const char *message,char*output, int min, int max) {
+    String input;
+    int len;
+
+    while (1) {
+        printf("%s", message);
+        scanf("%s", input);
+
+        len = strlen(input);
+
+        if(len>=min&&len<=max){
+            strcpy(output,input);
+            return;
+        
+        }
+
+        // エラーメッセージを表示して、再入力させる
+        printf("%d文字以上%d文字以下の整数を入力してください: ", min, max);
+        message="";
+    }
+}   
+    
+    
+
+
+
 int main(void)
 {
+
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+
     String num;
     int n = 0;
 
@@ -52,7 +132,7 @@ int main(void)
                 while ((cn = fread(&reademp, sizeof(Employee), 1, rfp)) > 0) {
                     
                     
-                    printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %d | 部署ID: %d |給与: %d |\n", 
+                    printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
                             reademp.id, reademp.name, reademp.gender, reademp.date,reademp.department,reademp.salary);
                 }
 
@@ -73,9 +153,13 @@ int main(void)
 
                 String search_name;
                 
-                printf("社員名を入力してください: ");
-                scanf("%s", search_name);
+                // printf("社員名を入力してください: ");
+                // scanf("%s", search_name);
                  
+                inputString("社員名を入力してください:",search_name,1,15);
+
+
+
                 FILE *se_rfp;   //ファイル構造体へのポインタ宣言
 
                 // rb（読み書き） emp.csvを開く
@@ -99,7 +183,7 @@ int main(void)
                 //search_emp.name(名簿の名前),search_name（入力した名前）
                     if(strstr(search_emp.name,search_name)!=NULL){
                     
-                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %d | 部署ID: %d |給与: %d |\n", 
+                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
                             search_emp.id, search_emp.name, search_emp.gender, search_emp.date,search_emp.department,search_emp.salary);
                         
 
@@ -125,20 +209,27 @@ int main(void)
                 printf("3. 部署ID検索\n");
 
         
-                printf("部署ID(1：営業部、2：経理部、3：総務部)を入力してください: ");
+                //関数 inputIntegerにより以下はいらなくなった
 
-                //検索する部署の番号を　 search_depに入れる　%s　文字型
-                String search_dep;
-                scanf("%s",search_dep);
-                //数値型に変える
+                // printf("部署ID(1：営業部、2：経理部、3：総務部)を入力してください: ");
+
+                // //検索する部署の番号を　 search_depに入れる　%s　文字型
+                // String search_dep;
+                // scanf("%s",search_dep);
+                // //数値型に変える
+                // int search_dep_id;
+                // search_dep_id = atoi(search_dep); 
+
+
                 int search_dep_id;
-                search_dep_id = atoi(search_dep); 
+                search_dep_id = inputInteger("部署ID(1：営業部、2：経理部、3：総務部)を入力してください: ",1,3);
+
                 
                 // rb（読み書き） emp.csvを開く
                 FILE *dep_rfp;
                 dep_rfp = fopen("emp.csv", "rb");
             
-                if (se_rfp == NULL) {
+                if (dep_rfp == NULL) {
                     printf("登録がありません\n");
                     break;
                 }
@@ -155,16 +246,16 @@ int main(void)
 
                     if(dep_emp.department == search_dep_id){
                     
-                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %d | 部署ID: %d |給与: %d |\n", 
+                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
                             dep_emp.id, dep_emp.name, dep_emp.gender, dep_emp.date,dep_emp.department,dep_emp.salary);
                         
-                            search_found =1;
+                            dep_found =1;
                         
                         }
                 }
-                fclose(se_rfp);
+                fclose(dep_rfp);
 
-                if(search_found==0){
+                if(dep_found==0){
                     printf("指定された社員が見つかりませんでした\n");
                   }
                    
@@ -182,25 +273,36 @@ int main(void)
 
                 Employee emp;   
 
-                printf("社員IDを入力してください:\n");
-                scanf("%d", &emp.id);
+                // printf("社員IDを入力してください:\n");
+                // scanf("%d", &emp.id);
+                
+                // // printf("名前を入力してください:\n");
+                // // scanf("%s", emp.name);
 
-                printf("名前を入力してください:\n");
-                scanf("%s", emp.name);
-
-                printf("性別入力してください(1: 男性, 2: 女性):\n");
-                scanf("%d", &emp.gender);
+                // printf("性別入力してください(1: 男性, 2: 女性):\n");
+                // scanf("%d", &emp.gender);
                 
 
-                printf("生年月日を入力してください（例:2026/04/01）\n");
-                scanf("%d", &emp.date);
+                // printf("生年月日を入力してください（例:2026/04/01）\n");
+                // scanf("%d", &emp.date);
 
-                printf("部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n");
-                scanf("%d", &emp.department);
+                // printf("部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n");
+                // scanf("%d", &emp.department);
 
-                printf("給与を入力してください　\n");
-                scanf("%d", &emp.salary);
-                
+                // printf("給与を入力してください　\n");
+                // scanf("%d", &emp.salary);
+
+
+                emp.id = inputInteger("社員IDを入力してください:\n",1,100);
+                inputString("名前を入力してください:\n", emp.name,1,15);
+                emp.gender = inputInteger("性別入力してください(1: 男性, 2: 女性):\n",1,2);
+                inputString("生年月日を入力してください（例:2026/04/01）\n", emp.date,10,10);
+                emp.department = inputInteger("部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n",1,3);
+                emp.salary = inputInteger("給与を入力してください(万円)\n",0,1000000);
+
+
+
+
                 FILE *wfp;
 
 
@@ -223,14 +325,22 @@ int main(void)
 
                 printf("更新\n");
 
+
+                //関数 inputIntegerにより以下はいらなくなった
+
+
                 //更新する社員の番号を　  up_numに入れる　%s　文字型
 
-                String up_num;
+                // String up_num;
+                // int update_id;
+                // printf("変更する社員の社員IDを入力してください: ");
+                // scanf("%s", up_num);
+                // //数値型に変える
+                // update_id = atoi(up_num); 
+
                 int update_id;
-                printf("変更する社員の社員IDを入力してください: ");
-                scanf("%s", up_num);
-                //数値型に変える
-                update_id = atoi(up_num); 
+                
+                update_id = inputInteger("変更する社員の社員IDを入力してください: ",1,100);
 
 
 
@@ -273,20 +383,34 @@ int main(void)
                 Employee update;
                 update.id = update_id; // IDは変更しないのでそのままコピー
 
-                printf("新しい社員名を入力してください:\n");
-                scanf("%s", update.name);
+                // printf("新しい社員名を入力してください:\n");
+                // scanf("%s", update.name);
 
-                printf("新しい性別を入力してください(1: 男性, 2: 女性):\n");
-                scanf("%d", &update.gender);
+                // printf("新しい性別を入力してください(1: 男性, 2: 女性):\n");
+                // scanf("%d", &update.gender);
 
-                printf("新しい生年月日を入力してください（例:20260401）:\n");
-                scanf("%d", &update.date);
+                // printf("新しい生年月日を入力してください（例:20260401）:\n");
+                // scanf("%d", &update.date);
 
-                printf("新しい部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n");
-                scanf("%d", &update.department);
+                // printf("新しい部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n");
+                // scanf("%d", &update.department);
 
-                printf("給与を入力してください\n");
-                scanf("%d", &update.salary);
+                // printf("給与を入力してください\n");
+                // scanf("%d", &update.salary);
+
+
+
+
+
+                inputString("新しい名前を入力してください:", update.name,1,15);
+                update.id = inputInteger("新しい性別入力してください(1: 男性, 2: 女性):\n",1,2);
+                update.id = inputInteger("新しい生年月日を入力してください（例:2026/04/01）\n",1900/01/01,9999/12/31);
+                update.id = inputInteger("新しい部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n",1,3);
+                update.id = inputInteger("新しい給与を入力してください\n",0,1000000);
+
+
+
+
 
                 // emp.csvをけして更地（wb）にする
                 FILE *up_wfp;
@@ -315,15 +439,25 @@ int main(void)
             case 6:
                 printf("削除\n");
 
-                //削除するIDの箱
-                String del_num; 
-                int delete_id;
 
-                printf("削除する社員の社員IDを入力してください: \n");
-                // del_numで受け取る　%sは文字列で受け取っている　
-                scanf("%s", del_num);
-                // atoi で数字に変換する　deleteIDは社員番号
-                delete_id = atoi(del_num);
+
+                //関数 inputIntegerにより以下はいらなくなった
+
+
+                // //削除するIDの箱
+                // String del_num; 
+                // int delete_id;
+
+                // printf("削除する社員の社員IDを入力してください: \n");
+                // // del_numで受け取る　%sは文字列で受け取っている　
+                // scanf("%s", del_num);
+                // // atoi で数字に変換する　deleteIDは社員番号
+                // delete_id = atoi(del_num);
+
+
+                int delete_id;
+                update_id = inputInteger("削除する社員の社員IDを入力してください:  ",1,2147483647);
+
 
                 //del_rfp　を作って　rb　（読み取り専用）　emp.csvファイル開く
                 FILE *del_rfp = fopen("emp.csv", "rb");
@@ -379,7 +513,10 @@ int main(void)
                 break; 
 
             default:
-                printf("1から5の数字を入力してください。\n");
+                printf("1から7の数字を入力してください。\n");
+            
+                
+                
                 break;
         }
     }
