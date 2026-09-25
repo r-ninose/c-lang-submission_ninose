@@ -96,6 +96,7 @@ void inputString(const char *message,char*output, int min, int max) {
 int main(void)
 {
 
+    //文字コード指定
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
 
