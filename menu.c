@@ -109,7 +109,18 @@ int main(void)
         printf("\n=== 社員管理システム ===\n1. 全件表示\n2. 社員名検索\n3. 部署ID検索\n4. 登録\n5. 更新\n6. 削除\n7. 終了\nメニュー番号を入力してください:");
 
 
-        scanf("%s", num);
+        // scanf の代わりに fgets を使って、エンターキーの入力をキャッチする
+        fgets(num, sizeof(num), stdin);
+
+        // もし何も入力されずにエンターだけが押された（改行文字だけだった）場合
+        if (num[0] == '\n') {
+            printf("1以上7以下の整数を入力してください：\n");
+            continue; // ループの先頭に戻ってメニューを再表示する
+        }
+
+        // エンターキーの改行文字を消去する処理
+        num[strcspn(num, "\n")] = '\0';
+        
         n = atoi(num); 
 
         switch (n) {
@@ -131,10 +142,17 @@ int main(void)
                 // 読み込めたデータの個数（cn）が 0 より大きい間、繰り返す
                 //1つずつ読みこんでいるためcnは1,1,1…読みこむものがなくなったら0になる
                 while ((cn = fread(&reademp, sizeof(Employee), 1, rfp)) > 0) {
+
+                    // 性別の数字を「男性/女性」に変換
+                    char *gender_str = (reademp.gender ==1)?"男性":(reademp.gender == 2) ? "女性" : "不明";
                     
+                     // 部署番号を「〇〇部」に変換
+                    char *dept_str = (reademp.department == 1) ? "営業部" : 
+                     (reademp.department == 2) ? "経理部" : 
+                     (reademp.department == 3) ? "総務部" : "不明";
                     
-                    printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
-                            reademp.id, reademp.name, reademp.gender, reademp.date,reademp.department,reademp.salary);
+                    printf(" 社員番号: %d | 名前: %s | 性別: %s | 生年月日: %s | 部署: %s |給与: %d |\n", 
+                            reademp.id, reademp.name, gender_str, reademp.date,dept_str,reademp.salary);
                 }
 
                 fclose(rfp); // ファイル閉じる
@@ -183,9 +201,17 @@ int main(void)
                 // 「!= NULL」と書くことで、一部分でも含まれていたらという意味
                 //search_emp.name(名簿の名前),search_name（入力した名前）
                     if(strstr(search_emp.name,search_name)!=NULL){
+
+                        // 性別の数字を「男性/女性」に変換
+                    char *gender_str = (search_emp.gender ==1)?"男性":(search_emp.gender == 2) ? "女性" : "不明";
                     
-                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
-                            search_emp.id, search_emp.name, search_emp.gender, search_emp.date,search_emp.department,search_emp.salary);
+                     // 部署番号を「〇〇部」に変換
+                    char *dept_str = (search_emp.department == 1) ? "営業部" : 
+                     (search_emp.department == 2) ? "経理部" : 
+                     (search_emp.department == 3) ? "総務部" : "不明";
+                    
+                         printf(" 社員番号: %d | 名前: %s | 性別: %s | 生年月日: %s | 部署ID: %s |給与: %d |\n", 
+                            search_emp.id, search_emp.name, gender_str, search_emp.date,dept_str,search_emp.salary);
                         
 
                             //見つかった数
@@ -246,9 +272,22 @@ int main(void)
                 while (fread(&dep_emp,sizeof(Employee),1,dep_rfp)>0){
 
                     if(dep_emp.department == search_dep_id){
+
+
+
+                         // 性別の数字を「男性/女性」に変換
+                    char *gender_str = (dep_emp.gender ==1)?"男性":(dep_emp.gender == 2) ? "女性" : "不明";
                     
-                         printf(" 社員番号: %d | 名前: %s | 性別: %d | 生年月日: %s | 部署ID: %d |給与: %d |\n", 
-                            dep_emp.id, dep_emp.name, dep_emp.gender, dep_emp.date,dep_emp.department,dep_emp.salary);
+                     // 部署番号を「〇〇部」に変換
+                    char *dept_str = (dep_emp.department == 1) ? "営業部" : 
+                     (dep_emp.department == 2) ? "経理部" : 
+                     (dep_emp.department == 3) ? "総務部" : "不明";
+
+
+
+                    
+                         printf(" 社員番号: %d | 名前: %s | 性別: %s | 生年月日: %s | 部署ID: %s |給与: %d |\n", 
+                            dep_emp.id, dep_emp.name, gender_str, dep_emp.date,dept_str,dep_emp.salary);
                         
                             dep_found =1;
                         
@@ -405,7 +444,7 @@ int main(void)
 
                 inputString("新しい名前を入力してください:", update.name,1,15);
                 update.id = inputInteger("新しい性別入力してください(1: 男性, 2: 女性):\n",1,2);
-                update.id = inputInteger("新しい生年月日を入力してください（例:2026/04/01）\n",1900/01/01,9999/12/31);
+                inputString("新しい生年月日を入力してください（例:2026/04/01）\n", emp.date, 10, 10);
                 update.id = inputInteger("新しい部署番号を入力してください（1：営業部、2：経理部、3：総務部）:\n",1,3);
                 update.id = inputInteger("新しい給与を入力してください\n",0,1000000);
 
